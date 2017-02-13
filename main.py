@@ -71,7 +71,7 @@ class MainPage(Handler):
 
 class BlogPosts(Handler):
 	def render_blog(self, title="", post_body="", error=""):
-		posts = db.GqlQuery("SELECT * FROM Blog ORDER BY created DESC ")
+		posts = db.GqlQuery("SELECT * FROM Blog ORDER BY created DESC LIMIT 5")
 
 		self.render("blog.html", title = title, post_body = post_body, error = error, posts = posts)
 
@@ -83,8 +83,13 @@ class BlogPosts(Handler):
 		title = self.request.get("title")
 		post_body = self.request.get("post_body")
 
+class ViewPostHandler(webapp2.RequestHandler):
+    def get(self, id):
+        id = db.GqlQuery("SELECT id FROM Blog")
+
 
 app = webapp2.WSGIApplication([
-	('/', MainPage),
+	('/newpost', MainPage),
 	('/blog', BlogPosts),
+	webapp2.Route('/blog/<id:\d+>', ViewPostHandler)
 	], debug=True)
