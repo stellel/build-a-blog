@@ -14,12 +14,77 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
 import webapp2
+import jinja2
 
-class MainHandler(webapp2.RequestHandler):
-    def get(self):
-        self.response.write('Hello world!')
+from google.appengine.ext import db
+
+template_dir = os.path.join(os.path.dirname(__file__), "templates")
+jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape = True)
+
+class Handler(webapp2.RequestHandler):
+
+	def write(self, *a, **kw):
+		self.response.out.write(*a, **kw)
+
+	def render_str(self, template, **params):
+		t = jinja_env.get_template(template)
+		return t.render(params)
+
+	def render(self, template, **kw):
+		self.write(self.render_str(template, **kw))
+
+class Blog(db.Model):
+	title = db.StringProperty(required = True)
+	post_body = db.TextProperty(required = True)
+	created = db.DateTimeProperty(auto_now_add = True)
+		
+
+
+class MainPage(Handler):
+	
+	def render_form(self, title="", post_body="", error=""):
+		self.render("frontpage.html", title = title, post_body = post_body, error = error)
+
+
+	def get(self):
+		self.render_form()
+
+	def post(self):
+
+		title = self.request.get("title")
+		post_body = self.request.get("post_body")
+
+		if (not title) or (not post_body):
+			error = "We need both a title and some content!"
+			self.render_form(title, post_body, error)
+
+		else:
+			a = Blog(title = title, post_body = post_body)
+			a.put()
+
+			self.redirect("/blog")
+
+
+
+
+class BlogPosts(Handler):
+	def render_blog(self, title="", post_body="", error=""):
+		posts = db.GqlQuery("SELECT * FROM Blog ORDER BY created DESC ")
+
+		self.render("blog.html", title = title, post_body = post_body, error = error, posts = posts)
+
+
+	def get(self):
+		self.render_blog()
+
+	def post(self):
+		title = self.request.get("title")
+		post_body = self.request.get("post_body")
+
 
 app = webapp2.WSGIApplication([
-    ('/', MainHandler)
-], debug=True)
+	('/', MainPage),
+	('/blog', BlogPosts),
+	], debug=True)
