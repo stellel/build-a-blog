@@ -85,7 +85,8 @@ class BlogPosts(Handler):
 
 class ViewPostHandler(webapp2.RequestHandler):
     def get(self, id):
-        id = db.GqlQuery("SELECT id FROM Blog")
+        id = Blog.get_by_id
+        self.response.write(id)
 
 
 app = webapp2.WSGIApplication([
