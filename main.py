@@ -85,12 +85,13 @@ class BlogPosts(Handler):
 
 class ViewPostHandler(webapp2.RequestHandler):
     def get(self, id):
-        id = Blog.get_by_id
-        self.response.write(id)
+    	post_id = self.request.get('id')
+        id = Blog.get_by_id( int(post_id) )
+
 
 
 app = webapp2.WSGIApplication([
-	('/newpost', MainPage),
+	('/blog/newpost', MainPage),
 	('/blog', BlogPosts),
 	webapp2.Route('/blog/<id:\d+>', ViewPostHandler)
 	], debug=True)
