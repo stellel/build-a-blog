@@ -85,8 +85,12 @@ class BlogPosts(Handler):
 
 class ViewPostHandler(webapp2.RequestHandler):
     def get(self, id):
-    	post_id = self.request.get('id')
+    	post_id = post.key.id()
         id = Blog.get_by_id( int(post_id) )
+
+
+#def get_posts(limit, offset):
+    # TODO: query the database for posts, and return them
 
 
 
